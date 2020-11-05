@@ -7,8 +7,6 @@
   </a>
 </p>
 
-About Employee Registration
-
 This project was developed to extend some functions of glpi tickets software.
 
 ## Technologies
