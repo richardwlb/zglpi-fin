@@ -4,7 +4,13 @@ import knex from '../database/connection';
 class EntitiesController {
 
     async indexEntities(req: Request, resp: Response) {
-        const entities = await knex('glpi_entities').select('glpi_entities.*');
+        const entities = await knex('glpi_entities')
+            .select('glpi_entities.id'
+                    ,'glpi_entities.name'
+                    ,'zglpi_entities_hour.hour_value')
+            .leftJoin('zglpi_entities_hour', 'zglpi_entities_hour.entities_id', 'glpi_entities.id')
+            .orderBy('glpi_entities.id');
+
         return resp.json(entities);
     }
 
@@ -13,6 +19,10 @@ class EntitiesController {
         const {id} = req.params;
 
         const entitie = await knex('glpi_entities')
+            .select('glpi_entities.id'
+                    ,'glpi_entities.*'
+                    ,'zglpi_entities_hour.hour_value')
+            .leftJoin('zglpi_entities_hour', 'zglpi_entities_hour.entities_id', 'glpi_entities.id')
             .where('id', id)
             .first();
 

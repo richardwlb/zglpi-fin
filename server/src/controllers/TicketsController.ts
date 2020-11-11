@@ -7,9 +7,9 @@ class TicketsController {
 
         const {id, dataIni, dataEnd} = req.params;
 
-        console.log('id', id);
-        console.log('dataIni', dataIni);
-        console.log('dataEnd', dataEnd);
+        // console.log('id', id);
+        // console.log('dataIni', dataIni);
+        // console.log('dataEnd', dataEnd);
 
         const hoursValue = await knex('glpi_tickets')
             .select('glpi_tickets.id'
@@ -34,11 +34,28 @@ class TicketsController {
             .join('glpi_entities', 'glpi_entities.id', 'glpi_tickets.entities_id')
             .join('zglpi_entities_hour', 'zglpi_entities_hour.entities_id', 'glpi_tickets.entities_id')
             .groupBy('glpi_tickets.id')
-            .orderBy('glpi_tickets.name');
+            .orderBy('glpi_tickets.date');
 
-        return resp.json(hoursValue);
+        const hoursValueTotal = await knex('glpi_tickets')
+            .sum('glpi_tickettasks.actiontime as total_time_seconds' )
+            .columns([
+                knex.raw('sum(glpi_tickettasks.actiontime / 60 / 60) as total_time_hour')
+              ])
+            .columns([
+                knex.raw('sum(glpi_tickettasks.actiontime / 60 / 60) * hour_value as cost')
+            ])
+            .where('glpi_tickets.entities_id', id)
+            .where('glpi_tickets.date', '>=', `${dataIni}T00:00:00.000Z`)
+            .where('glpi_tickets.closedate', '<=', `${dataEnd}T00:00:00.000Z`)
+            .join('glpi_tickettasks', 'glpi_tickettasks.tickets_id', 'glpi_tickets.id')
+            .join('glpi_entities', 'glpi_entities.id', 'glpi_tickets.entities_id')
+            .join('zglpi_entities_hour', 'zglpi_entities_hour.entities_id', 'glpi_tickets.entities_id')
+            .groupBy('glpi_tickets.entities_id')
+            .orderBy('glpi_tickets.date')
+            .first();
+
+        return resp.json({hoursValue, hoursValueTotal});
     }
-
 }
 
 export default TicketsController;

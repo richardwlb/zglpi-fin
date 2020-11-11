@@ -16,5 +16,6 @@ This project was developed to extend some functions of glpi tickets software.
 - React
 - MariaDB
 - Docker
+- Bootstrap
 
 
